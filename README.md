@@ -11,8 +11,6 @@ Classify a review as Positive, Neutral or Negative.
 - [Azure CLI](https://docs.microsoft.com/en-us/dotnet/azure/install-azure-cli/)
 - [Bicep](https://docs.microsoft.com/en-us/azure/azure-resource-manager/bicep/install/)
 
-> Note: Using PowerBI is an optional way to visulize data.
-
 ## Setup and deployment
 
 1. Create a resource group in which the resources would be created.
