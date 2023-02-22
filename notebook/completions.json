@@ -1,5 +1,5 @@
 {
-	"name": "Notebook 1",
+	"name": "completions",
 	"properties": {
 		"nbformat": 4,
 		"nbformat_minor": 2,
@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "df550e3b-b44b-414f-af76-36270995517d"
+				"spark.autotune.trackingId": "9aa0f56d-b7ff-4429-91eb-450c03555164"
 			}
 		},
 		"metadata": {
@@ -58,7 +58,7 @@
 					}
 				},
 				"source": [
-					"**Get input data**"
+					"**Load input data into dataframe**"
 				]
 			},
 			{
@@ -76,12 +76,10 @@
 					"collapsed": false
 				},
 				"source": [
-					"\r\n",
-					"\r\n",
 					"df = spark.read.load('abfss://openaisynapsesample@openaisynapsesample.dfs.core.windows.net/sample_data.csv', format='csv', header=True)\r\n",
 					"display(df)"
 				],
-				"execution_count": 6
+				"execution_count": 24
 			},
 			{
 				"cell_type": "markdown",
@@ -93,7 +91,40 @@
 					}
 				},
 				"source": [
-					"**Use OpenAI**"
+					"Create a new column with the prompt to each row"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df = df.withColumn(\"prompt\", \r\n",
+					"            concat(lit(\"Decide whether a review's sentiment is positive, neutral, or negative. Review: \")\r\n",
+					"            , col(\"review\"), lit(\" Sentiment:\")))"
+				],
+				"execution_count": null
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"**Connect to OpenAI Service and generate completion**"
 				]
 			},
 			{
@@ -120,11 +151,7 @@
 					"\r\n",
 					"key = find_secret(\"openai-key\", \"keyvault-openai-demo\")\r\n",
 					"\r\n",
-					"df = df.withColumn(\"prompt\", \r\n",
-					"            concat(lit(\"Decide whether a review's sentiment is positive, neutral, or negative. Review: \")\r\n",
-					"            , col(\"review\"), lit(\" Sentiment:\")))\r\n",
-					"\r\n",
-					"completion = (\r\n",
+					"df_completion = (\r\n",
 					"    OpenAICompletion()\r\n",
 					"        .setSubscriptionKey(key)\r\n",
 					"        .setDeploymentName(openai_deployment)\r\n",
@@ -135,7 +162,7 @@
 					"\r\n",
 					"display(df_completion)"
 				],
-				"execution_count": 18
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
@@ -152,10 +179,54 @@
 					"collapsed": false
 				},
 				"source": [
-					"df_completion = completion.transform(df).withColumn(\"sentiment\", col(\"output.choices.text\").getItem(0))\r\n",
+					"df_completion = completion.transform(df).withColumn(\"response\", col(\"output.choices.text\").getItem(0))\r\n",
 					"display(df_completion)"
 				],
-				"execution_count": 20
+				"execution_count": null
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"**Data Heath Cheks**"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df = df.withColumn(\"prompt_country_code\", \r\n",
+					"            concat(lit(\"Convert the country name to the ISO alpha 2 code. \\n\\nExample: Country name: Portugal\\n\\nCode: PT\\n\\nCountry: \")\r\n",
+					"            , col(\"country\"), lit(\" Code:\")))\r\n",
+					"\r\n",
+					"df_completion = (\r\n",
+					"    OpenAICompletion()\r\n",
+					"        .setSubscriptionKey(key)\r\n",
+					"        .setDeploymentName(openai_deployment)\r\n",
+					"        .setUrl(\"https://openai-soferreira.openai.azure.com/\")\r\n",
+					"        .setPromptCol(\"prompt_country_code\")\r\n",
+					"        .setErrorCol(\"error\")\r\n",
+					"        .setOutputCol(\"country code\"))\r\n",
+					"\r\n",
+					"display(df_completion)"
+				],
+				"execution_count": null
 			}
 		]
 	}
