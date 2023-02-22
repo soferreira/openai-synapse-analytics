@@ -1,5 +1,5 @@
 {
-	"name": "reviews sentiment",
+	"name": "Address",
 	"properties": {
 		"nbformat": 4,
 		"nbformat_minor": 2,
@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "d60df8be-100e-4521-8483-c5457779291d"
+				"spark.autotune.trackingId": "6389afeb-b29b-40f4-acf4-8db4fe8631d5"
 			}
 		},
 		"metadata": {
@@ -58,43 +58,21 @@
 					}
 				},
 				"source": [
-					"**Load input data into dataframe**"
+					"Standardize Adresses"
 				]
 			},
 			{
 				"cell_type": "code",
 				"metadata": {
-					"jupyter": {
-						"source_hidden": false,
-						"outputs_hidden": false
-					},
-					"nteract": {
-						"transient": {
-							"deleting": false
-						}
-					},
 					"collapsed": false
 				},
 				"source": [
 					"from pyspark.sql.functions import *\r\n",
 					"\r\n",
-					"df = spark.read.load('abfss://openaisynapsesample@openaisynapsesample.dfs.core.windows.net/reviews.csv', format='csv', header=True)\r\n",
+					"df = spark.read.load('abfss://openaisynapsesample@openaisynapsesample.dfs.core.windows.net/adresses.csv', format='csv', header=True, delimiter=';')\r\n",
 					"display(df)"
 				],
-				"execution_count": 3
-			},
-			{
-				"cell_type": "markdown",
-				"metadata": {
-					"nteract": {
-						"transient": {
-							"deleting": false
-						}
-					}
-				},
-				"source": [
-					"**Connect to OpenAI Service and generate completion**"
-				]
+				"execution_count": 48
 			},
 			{
 				"cell_type": "code",
@@ -111,19 +89,15 @@
 					"collapsed": false
 				},
 				"source": [
-					"from pyspark.sql.functions import *\r\n",
 					"from synapse.ml.cognitive import OpenAICompletion\r\n",
 					"from synapse.ml.core.platform import running_on_synapse, find_secret\r\n",
-					"\r\n",
-					"# Load input data\r\n",
-					"df = spark.read.load('abfss://openaisynapsesample@openaisynapsesample.dfs.core.windows.net/reviews.csv', format='csv', header=True)\r\n",
 					"\r\n",
 					"openai_service = \"openai-soferreira\"\r\n",
 					"openai_deployment = \"text-davinci-003\"\r\n",
 					"\r\n",
 					"key = find_secret(\"openai-key\", \"keyvault-openai-demo\")\r\n",
 					"\r\n",
-					"# Set API call definition\r\n",
+					"# API call definition\r\n",
 					"completion = (\r\n",
 					"    OpenAICompletion()\r\n",
 					"        .setSubscriptionKey(key)\r\n",
@@ -133,17 +107,69 @@
 					"        .setErrorCol(\"error\")\r\n",
 					"        .setOutputCol(\"output\"))\r\n",
 					"\r\n",
-					"# Create prompt for each row of the dataframe\r\n",
+					"# Define prompt to get country code from the address\r\n",
 					"df = df.withColumn(\"prompt\", \r\n",
-					"            concat(lit(\"Decide whether a review's sentiment is positive, neutral, or negative. Review: \")\r\n",
-					"            , col(\"review\"), lit(\" Sentiment:\")))\r\n",
+					"            concat(lit(\"Provide Country ISO standard two-letter code for the address: \")\r\n",
+					"            , col(\"Address\"), lit(\" ISO standard two-letter code:\")))\r\n",
 					"\r\n",
-					"# Call API\r\n",
-					"df_completion = completion.transform(df).withColumn(\"response\", col(\"output.choices.text\").getItem(0))\r\n",
+					"# Call API \r\n",
+					"df_completion = completion.transform(df).withColumn(\"Country\", col(\"output.choices.text\").getItem(0))\r\n",
+					"display(df_completion)\r\n",
+					""
+				],
+				"execution_count": 44
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					},
+					"collapsed": false
+				},
+				"source": [
+					"# Define prompt to get street from the address\r\n",
+					"df = df.withColumn(\"prompt\", \r\n",
+					"            concat(lit(\"Provide the street name of the address: \")\r\n",
+					"            , col(\"Address\"), lit(\" Street name:\")))\r\n",
 					"\r\n",
+					"# Call API \r\n",
+					"df_completion = completion.transform(df).withColumn(\"Street\", col(\"output.choices.text\").getItem(0))\r\n",
 					"display(df_completion)"
 				],
-				"execution_count": 8
+				"execution_count": 45
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					},
+					"collapsed": false
+				},
+				"source": [
+					"# Define prompt to get postal code from the address\r\n",
+					"df = df.withColumn(\"prompt\", \r\n",
+					"            concat(lit(\"Provide the postal code of the address: \")\r\n",
+					"            , col(\"Address\"), lit(\" Postal Code:\")))\r\n",
+					"\r\n",
+					"# Call API\r\n",
+					"df_completion = completion.transform(df).withColumn(\"Posta Code\", col(\"output.choices.text\").getItem(0))\r\n",
+					"display(df_completion)"
+				],
+				"execution_count": 46
 			}
 		]
 	}
