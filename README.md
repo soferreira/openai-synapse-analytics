@@ -42,8 +42,10 @@ from synapse.ml.core.platform import find_secret
 openai_service = "<your_openai_service_name>"
 openai_deployment = "<your_openai_deployment_name>"
 
+# Get OpenAI key
 key = find_secret("<your_openai_secret_name>", "<your_keyvault_service_name>")
 
+# API call definition
 completion = (
     OpenAICompletion()
         .setSubscriptionKey(key)
@@ -53,6 +55,8 @@ completion = (
         .setErrorCol("error")
         .setOutputCol("output")
 )
+
+# Define prompt to get review's sentiment
 df = df.withColumn("prompt", 
             concat(lit("Decide whether a review's sentiment is positive, neutral, or negative. Review: ")
             , col("review"), lit(" Sentiment:")))
@@ -92,6 +96,7 @@ openai_deployment = "<your_openai_deployment_name>"
 
 key = find_secret("<your_openai_secret_name>", "<your_keyvault_service_name>")
 
+# API call definition
 completion = (
     OpenAICompletion()
         .setSubscriptionKey(key)
