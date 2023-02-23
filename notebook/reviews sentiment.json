@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "687e6cce-2bdf-454f-b334-300f5b6faf4a"
+				"spark.autotune.trackingId": "83e9cf38-7dd1-44ab-ad6b-4981486bc9fc"
 			}
 		},
 		"metadata": {
@@ -117,8 +117,10 @@
 					"openai_service = \"<your_openai_service_name>\"\r\n",
 					"openai_deployment = \"<your_openai_deployment_name>\"\r\n",
 					"\r\n",
+					"# Get secret from Key Vault\r\n",
 					"key = find_secret(\"<your_openai_secret_name>\", \"<your_keyvault_service_name>\")\r\n",
 					"\r\n",
+					"# API call definition\r\n",
 					"completion = (\r\n",
 					"    OpenAICompletion()\r\n",
 					"        .setSubscriptionKey(key)\r\n",
@@ -128,6 +130,8 @@
 					"        .setErrorCol(\"error\")\r\n",
 					"        .setOutputCol(\"output\")\r\n",
 					")\r\n",
+					"\r\n",
+					"# Define prompt to get review's sentiment\r\n",
 					"df = df.withColumn(\"prompt\", \r\n",
 					"            concat(lit(\"Decide whether a review's sentiment is positive, neutral, or negative. Review: \")\r\n",
 					"            , col(\"review\"), lit(\" Sentiment:\")))\r\n",
