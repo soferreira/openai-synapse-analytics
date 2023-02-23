@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "6389afeb-b29b-40f4-acf4-8db4fe8631d5"
+				"spark.autotune.trackingId": "2b3676a4-bfce-497c-a7ee-ae00f462c174"
 			}
 		},
 		"metadata": {
@@ -69,7 +69,7 @@
 				"source": [
 					"from pyspark.sql.functions import *\r\n",
 					"\r\n",
-					"df = spark.read.load('abfss://openaisynapsesample@openaisynapsesample.dfs.core.windows.net/adresses.csv', format='csv', header=True, delimiter=';')\r\n",
+					"df = spark.read.load('abfss://<storage_account_name>@<container_name>.dfs.core.windows.net/addresses.csv', format='csv', header=True)\r\n",
 					"display(df)"
 				],
 				"execution_count": 48
@@ -92,8 +92,8 @@
 					"from synapse.ml.cognitive import OpenAICompletion\r\n",
 					"from synapse.ml.core.platform import running_on_synapse, find_secret\r\n",
 					"\r\n",
-					"openai_service = \"openai-soferreira\"\r\n",
-					"openai_deployment = \"text-davinci-003\"\r\n",
+					"openai_service = \"<your_openai_service_name>\"\r\n",
+					"openai_deployment = \"<your_openai_deployment_name>\"\r\n",
 					"\r\n",
 					"key = find_secret(\"openai-key\", \"keyvault-openai-demo\")\r\n",
 					"\r\n",
