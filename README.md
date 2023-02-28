@@ -34,6 +34,8 @@ df = spark.read.load('abfss://<storage_account_name>@<container_name>.dfs.core.w
 
 In the next cell we will define the [OpenAICompletion](https://mmlspark.blob.core.windows.net/docs/0.10.0/pyspark/synapse.ml.cognitive.html#module-synapse.ml.cognitive.OpenAICompletion) API call and add a new column to the dataframe with the corresponding prompt for each row.
 
+After making the call, the output will be presented in a JSON format, containing the result as well as several other details in the designated column. Subsequently, we will create a new column named response specifically for the sentiment value.
+
 ```python
 from pyspark.sql.functions import *
 from synapse.ml.cognitive import OpenAICompletion
@@ -61,31 +63,15 @@ df = df.withColumn("prompt",
             concat(lit("Decide whether a review's sentiment is positive, neutral, or negative. Review: ")
             , col("review"), lit(" Sentiment:")))
 
-```
-
-After making the call, the output will be presented in a JSON format, containing the result as well as several other details in the designated column. Subsequently, we will create a new column named response specifically for the sentiment value.
-
-```python
-from pyspark.sql.functions import *
-
 df_completion = completion.transform(df).withColumn("response", col("output.choices.text").getItem(0))
-```
 
-```json
-{
-    "model":"text-davinci-003",
-    "choices":[{"text":" Positive","index":0,"finish_reason":"stop"}],
-    "object":"text_completion",
-    "id":"cmpl-6mKImBBsdcilzBJVttNXixeBrKmGD",
-    "created":"1676975804"
-}
 ```
 
 ![output_sentiment](images/output_sentiment.png)
 
 ## Use Case - Get address information from unstandardized data
 
-Suppose that due to the lack of standardized data collection practices, your data contains various formats for addresses, making it challenging to perform geolocation-based analysis. To address this issue, you can leverage OpenAICompletion to standardize the address format across the dataframe.
+Suppose that due to the lack of standardized data collection practices, your data contains various formats for addresses, making it challenging to perform analysis. In the example bellow we leverage batch prompt of OpenAICompletion to standardize the address format across the dataframe.
 
 ```python
 from synapse.ml.cognitive import OpenAICompletion
@@ -102,19 +88,30 @@ completion = (
         .setSubscriptionKey(key)
         .setDeploymentName(openai_deployment)
         .setUrl("https://<your_openai_service_name>.openai.azure.com/")
-        .setPromptCol("prompt")
+        .setMaxTokens(200)
+        .setBatchPromptCol("batchPrompt")
         .setErrorCol("error")
-        .setOutputCol("output")
+        .setOutputCol("completions")
 )
-# Define prompt to get country code from the address
-df = df.withColumn("prompt", 
-            concat(lit("Provide Country ISO standard two-letter code for the address: ")
-            , col("Address"), lit(" ISO standard two-letter code:")))
 
-# Call API 
-df_completion = completion.transform(df).withColumn("Country", col("output.choices.text").getItem(0))
-display(df_completion)
+# Create a batchPrompt where each row as multiple prompts
+df = df.withColumn("batchPrompt", 
+    array(
+        concat(lit("Provide Country ISO standard two-letter code for the following address: "), col("Address")),
+        concat(lit("Provide the street name for the following address: "), col("Address")),
+        concat(lit("Provide the postal code of the following address: "), col("Address"))
+    )
+)
+
+completed_batch_df = batch_completion.transform(df).cache()
+
+# Create a new column for each completion result
+completed_batch_df = completed_batch_df.withColumn("Country Code", col("completions.choices.text").getItem(0))
+completed_batch_df = completed_batch_df.withColumn("Street", col("completions.choices.text").getItem(1))
+completed_batch_df = completed_batch_df.withColumn("Postal Code", col("completions.choices.text").getItem(2))
+
+display(completed_batch_df)
 
 ```
 
-Similarly, you can create additional prompts to retrieve street name, postal code or to generate new columns, such as longitude and latitude, based on the standardized address format.
+![address_output](images/address_output.png)
