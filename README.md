@@ -73,6 +73,8 @@ df_completion = completion.transform(df).withColumn("response", col("output.choi
 
 Suppose that due to the lack of standardized data collection practices, your data contains various formats for addresses, making it challenging to perform analysis. In the example bellow we leverage batch prompt of OpenAICompletion to standardize the address format across the dataframe.
 
+![address](images/address.png)
+
 ```python
 from synapse.ml.cognitive import OpenAICompletion
 from synapse.ml.core.platform import find_secret
