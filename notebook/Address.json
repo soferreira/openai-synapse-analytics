@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "2b3676a4-bfce-497c-a7ee-ae00f462c174"
+				"spark.autotune.trackingId": "a1bf4b05-fa4e-401a-b031-d48e0cd3ba0a"
 			}
 		},
 		"metadata": {
@@ -58,7 +58,7 @@
 					}
 				},
 				"source": [
-					"Standardize Adresses"
+					"**Leverage batch prompt of OpenAICompletion to standardize the address format**"
 				]
 			},
 			{
@@ -69,10 +69,11 @@
 				"source": [
 					"from pyspark.sql.functions import *\r\n",
 					"\r\n",
-					"df = spark.read.load('abfss://<storage_account_name>@<container_name>.dfs.core.windows.net/addresses.csv', format='csv', header=True)\r\n",
+					"# Read input data\r\n",
+					"df = spark.read.load('abfss://<storage_account_name>@<container_name>.dfs.core.windows.net/addresses.csv', format='csv', header=True, delimiter=\"|\")\r\n",
 					"display(df)"
 				],
-				"execution_count": 48
+				"execution_count": 16
 			},
 			{
 				"cell_type": "code",
@@ -95,81 +96,39 @@
 					"openai_service = \"<your_openai_service_name>\"\r\n",
 					"openai_deployment = \"<your_openai_deployment_name>\"\r\n",
 					"\r\n",
-					"key = find_secret(\"openai-key\", \"keyvault-openai-demo\")\r\n",
+					"key = find_secret(\"openai-key\", \"<your_keyvault_name>\")\r\n",
 					"\r\n",
 					"# API call definition\r\n",
 					"completion = (\r\n",
 					"    OpenAICompletion()\r\n",
 					"        .setSubscriptionKey(key)\r\n",
 					"        .setDeploymentName(openai_deployment)\r\n",
-					"        .setUrl(\"https://openai-soferreira.openai.azure.com/\")\r\n",
-					"        .setPromptCol(\"prompt\")\r\n",
+					"        .setUrl(\"https://<your_openai_service_name>.openai.azure.com/\")\r\n",
+					"        .setMaxTokens(200)\r\n",
+					"        .setBatchPromptCol(\"batchPrompt\")\r\n",
 					"        .setErrorCol(\"error\")\r\n",
-					"        .setOutputCol(\"output\"))\r\n",
+					"        .setOutputCol(\"completions\"))\r\n",
 					"\r\n",
-					"# Define prompt to get country code from the address\r\n",
-					"df = df.withColumn(\"prompt\", \r\n",
-					"            concat(lit(\"Provide Country ISO standard two-letter code for the address: \")\r\n",
-					"            , col(\"Address\"), lit(\" ISO standard two-letter code:\")))\r\n",
+					"# Create a batchPrompt where each row as multiple prompts\r\n",
+					"df = df.withColumn(\"batchPrompt\", \r\n",
+					"    array(\r\n",
+					"        concat(lit(\"Provide Country ISO standard two-letter code for the following address: \"), col(\"Address\")),\r\n",
+					"        concat(lit(\"Provide the street name for the following address: \"), col(\"Address\")),\r\n",
+					"        concat(lit(\"Provide the postal code of the following address: \"), col(\"Address\"))\r\n",
+					"    )\r\n",
+					")\r\n",
 					"\r\n",
-					"# Call API \r\n",
-					"df_completion = completion.transform(df).withColumn(\"Country\", col(\"output.choices.text\").getItem(0))\r\n",
-					"display(df_completion)\r\n",
+					"completed_batch_df = batch_completion.transform(df).cache()\r\n",
+					"\r\n",
+					"# Create a new column for each completion result\r\n",
+					"completed_batch_df = completed_batch_df.withColumn(\"Country Code\", col(\"completions.choices.text\").getItem(0))\r\n",
+					"completed_batch_df = completed_batch_df.withColumn(\"Street\", col(\"completions.choices.text\").getItem(1))\r\n",
+					"completed_batch_df = completed_batch_df.withColumn(\"Postal Code\", col(\"completions.choices.text\").getItem(2))\r\n",
+					"\r\n",
+					"display(completed_batch_df)\r\n",
 					""
 				],
 				"execution_count": 44
-			},
-			{
-				"cell_type": "code",
-				"metadata": {
-					"jupyter": {
-						"source_hidden": false,
-						"outputs_hidden": false
-					},
-					"nteract": {
-						"transient": {
-							"deleting": false
-						}
-					},
-					"collapsed": false
-				},
-				"source": [
-					"# Define prompt to get street from the address\r\n",
-					"df = df.withColumn(\"prompt\", \r\n",
-					"            concat(lit(\"Provide the street name of the address: \")\r\n",
-					"            , col(\"Address\"), lit(\" Street name:\")))\r\n",
-					"\r\n",
-					"# Call API \r\n",
-					"df_completion = completion.transform(df).withColumn(\"Street\", col(\"output.choices.text\").getItem(0))\r\n",
-					"display(df_completion)"
-				],
-				"execution_count": 45
-			},
-			{
-				"cell_type": "code",
-				"metadata": {
-					"jupyter": {
-						"source_hidden": false,
-						"outputs_hidden": false
-					},
-					"nteract": {
-						"transient": {
-							"deleting": false
-						}
-					},
-					"collapsed": false
-				},
-				"source": [
-					"# Define prompt to get postal code from the address\r\n",
-					"df = df.withColumn(\"prompt\", \r\n",
-					"            concat(lit(\"Provide the postal code of the address: \")\r\n",
-					"            , col(\"Address\"), lit(\" Postal Code:\")))\r\n",
-					"\r\n",
-					"# Call API\r\n",
-					"df_completion = completion.transform(df).withColumn(\"Posta Code\", col(\"output.choices.text\").getItem(0))\r\n",
-					"display(df_completion)"
-				],
-				"execution_count": 46
 			}
 		]
 	}
