@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "a1bf4b05-fa4e-401a-b031-d48e0cd3ba0a"
+				"spark.autotune.trackingId": "6f2eeab9-3dda-4b11-a6e6-b98113ae4174"
 			}
 		},
 		"metadata": {
@@ -73,7 +73,7 @@
 					"df = spark.read.load('abfss://<storage_account_name>@<container_name>.dfs.core.windows.net/addresses.csv', format='csv', header=True, delimiter=\"|\")\r\n",
 					"display(df)"
 				],
-				"execution_count": 16
+				"execution_count": 19
 			},
 			{
 				"cell_type": "code",
@@ -111,11 +111,11 @@
 					"\r\n",
 					"# Create a batchPrompt where each row as multiple prompts\r\n",
 					"df = df.withColumn(\"batchPrompt\", \r\n",
-					"    array(\r\n",
-					"        concat(lit(\"Provide Country ISO standard two-letter code for the following address: \"), col(\"Address\")),\r\n",
-					"        concat(lit(\"Provide the street name for the following address: \"), col(\"Address\")),\r\n",
-					"        concat(lit(\"Provide the postal code of the following address: \"), col(\"Address\"))\r\n",
-					"    )\r\n",
+					"    udf(lambda address: [\r\n",
+					"          \"Provide Country ISO standard two-letter code for the following address: \" + address,\r\n",
+					"          \"Provide the street name for the following address: \" + address,\r\n",
+					"          \"Provide the postal code of the following address: \" + address\r\n",
+					"    ], ArrayType(StringType()))(col(\"Address\"))\r\n",
 					")\r\n",
 					"\r\n",
 					"completed_batch_df = batch_completion.transform(df).cache()\r\n",
