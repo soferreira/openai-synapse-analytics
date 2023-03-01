@@ -17,8 +17,7 @@ The [OpenAICompletion](https://mmlspark.blob.core.windows.net/docs/0.10.0/pyspar
 1. Upload the csv sample data into your storage account. The sample data can be found on this repo under the sample-data folder.
 1. Open your Synapse workspace.
 1. Open the Data tab and connect your workspace with the storage account. You should be abe to see the csv files listed.
-1. Point your Synapse Analytics workspace to the cloned/forked repository as shown in this [article](https://docs.microsoft.com/en-us/azure/synapse-analytics/cicd/source-control).
-1. Go to Develop > Notebooks and open completions notebook.
+1. Import the notebooks in this repository into your Synapse Analytics workspace.
 
 ## Use Case - Get sentiment from review
 
@@ -32,7 +31,7 @@ df = spark.read.load('abfss://<storage_account_name>@<container_name>.dfs.core.w
 
 ![load_df](images/load_df.png)
 
-In the next cell we will define the [OpenAICompletion](https://mmlspark.blob.core.windows.net/docs/0.10.0/pyspark/synapse.ml.cognitive.html#module-synapse.ml.cognitive.OpenAICompletion) API call and add a new column to the dataframe with the corresponding prompt for each row.
+In the next cell we will define the [OpenAICompletion](https://mmlspark.blob.core.windows.net/docs/0.10.0/pyspark/synapse.ml.cognitive.html#module-synapse.ml.cognitive.OpenAICompletion) API call and add a new column to the dataframe with the corresponding prompt for each row. The key to access the OpenAI service will be retrieved from Key Vault using the find_secret function.
 
 After making the call, the output will be presented in a JSON format, containing the result as well as several other details in the designated column. Subsequently, we will create a new column named response specifically for the sentiment value.
 
