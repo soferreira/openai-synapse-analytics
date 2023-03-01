@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "f02e56bf-9a85-4930-952d-826db4aa46f4"
+				"spark.autotune.trackingId": "4c665a80-d43f-4039-bc9f-36e08ca871bc"
 			}
 		},
 		"metadata": {
@@ -133,7 +133,8 @@
 					"\r\n",
 					"# Define prompt to get review's sentiment\r\n",
 					"df = df.withColumn(\"prompt\", \r\n",
-					"  udf(lambda review: \"Decide whether a review's sentiment is positive, neutral, or negative. Review: \" + review + \" Sentiment: \", StringType())(col(\"review\"))\r\n",
+					"    udf(lambda review: \"Decide whether a review's sentiment is positive, neutral, or negative. Review: \" + review + \" Sentiment: \",\r\n",
+					"        StringType())(col(\"review\"))\r\n",
 					")\r\n",
 					"\r\n",
 					"# Call API\r\n",
