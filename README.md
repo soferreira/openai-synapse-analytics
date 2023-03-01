@@ -2,7 +2,7 @@
 
 In this tutorial we will leverage Azure OpenAI service from a Synapse Analytics workspace using the [SynapseML](https://microsoft.github.io/SynapseML/docs/about/) library.
 
-The [OpenAICompletion](https://mmlspark.blob.core.windows.net/docs/0.10.0/pyspark/synapse.ml.cognitive.html#module-synapse.ml.cognitive.OpenAICompletion) module offers numerous possibilities for its application, such as data enrichment and implementing data quality changes that may be challenging to achieve with conventional coding techniques. For example, suppose your data has been collected in an inconsistent or non-standardized manner, resulting in poor data quality. In that case, you can use OpenAICompletion to standardize and enrich your data.
+The [OpenAICompletion](https://mmlspark.blob.core.windows.net/docs/0.10.0/pyspark/synapse.ml.cognitive.html#module-synapse.ml.cognitive.OpenAICompletion) module offers numerous possibilities for its application. For example, suppose your data has been collected in an inconsistent or non-standardized manner, resulting in poor data quality. In that case, you can use OpenAICompletion to standardize, enrich your data and implementing data quality changes that may be challenging to achieve with conventional coding techniques.
 
 ## Prerequisites
 
@@ -13,11 +13,10 @@ The [OpenAICompletion](https://mmlspark.blob.core.windows.net/docs/0.10.0/pyspar
 
 ## Setup
 
-1. Clone or fork this repository.
 1. Upload the csv sample data into your storage account. The sample data can be found on this repo under the sample-data folder.
 1. Open your Synapse workspace.
 1. Open the Data tab and connect your workspace with the storage account. You should be abe to see the csv files listed.
-1. Import the notebooks in this repository into your Synapse Analytics workspace.
+1. Open the Develop tab, and import the notebooks in this repository into your Synapse Analytics workspace.
 
 ## Use Case - Get sentiment from review
 
