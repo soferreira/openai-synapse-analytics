@@ -13,7 +13,7 @@ The [OpenAICompletion](https://mmlspark.blob.core.windows.net/docs/0.10.0/pyspar
 
 ## Setup
 
-1. If you haven't already, create an Azure OpenAI resource and in the OpenAI Studio select the model you wish to deploy. For detailed instructions see [here](https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource?pivots=web-portal). In this sample we used the ´´´text-davinci-003´´´ model.
+1. If you haven't already, create an Azure OpenAI resource and in the OpenAI Studio select the model you wish to deploy. For detailed instructions see [here](https://learn.microsoft.com/azure/cognitive-services/openai/how-to/create-resource?pivots=web-portal). In this sample we used the ```text-davinci-003``` model.
 1. Upload the csv sample data into your storage account. The sample data can be found on this repo under the sample-data folder.
 1. Open your Synapse workspace.
 1. Open the Data tab and connect your workspace with the storage account. You should be abe to see the csv files listed.
