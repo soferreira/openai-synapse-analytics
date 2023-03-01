@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "83e9cf38-7dd1-44ab-ad6b-4981486bc9fc"
+				"spark.autotune.trackingId": "4c665a80-d43f-4039-bc9f-36e08ca871bc"
 			}
 		},
 		"metadata": {
@@ -81,7 +81,7 @@
 					"df = spark.read.load('abfss://<storage_account_name>@<container_name>.dfs.core.windows.net/reviews.csv', format='csv', header=True)\r\n",
 					"display(df)"
 				],
-				"execution_count": 3
+				"execution_count": 7
 			},
 			{
 				"cell_type": "markdown",
@@ -133,8 +133,9 @@
 					"\r\n",
 					"# Define prompt to get review's sentiment\r\n",
 					"df = df.withColumn(\"prompt\", \r\n",
-					"            concat(lit(\"Decide whether a review's sentiment is positive, neutral, or negative. Review: \")\r\n",
-					"            , col(\"review\"), lit(\" Sentiment:\")))\r\n",
+					"    udf(lambda review: \"Decide whether a review's sentiment is positive, neutral, or negative. Review: \" + review + \" Sentiment: \",\r\n",
+					"        StringType())(col(\"review\"))\r\n",
+					")\r\n",
 					"\r\n",
 					"# Call API\r\n",
 					"df_completion = completion.transform(df).withColumn(\"response\", col(\"output.choices.text\").getItem(0))\r\n",

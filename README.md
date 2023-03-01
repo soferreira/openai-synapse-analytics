@@ -59,8 +59,8 @@ completion = (
 
 # Define prompt to get review's sentiment
 df = df.withColumn("prompt", 
-            concat(lit("Decide whether a review's sentiment is positive, neutral, or negative. Review: ")
-            , col("review"), lit(" Sentiment:")))
+  udf(lambda review: "Decide whether a review's sentiment is positive, neutral, or negative. Review: " + review + " Sentiment: ", StringType())(col("review"))
+)
 
 df_completion = completion.transform(df).withColumn("response", col("output.choices.text").getItem(0))
 
@@ -97,11 +97,11 @@ completion = (
 
 # Create a batchPrompt where each row as multiple prompts
 df = df.withColumn("batchPrompt", 
-    array(
-        concat(lit("Provide Country ISO standard two-letter code for the following address: "), col("Address")),
-        concat(lit("Provide the street name for the following address: "), col("Address")),
-        concat(lit("Provide the postal code of the following address: "), col("Address"))
-    )
+    udf(lambda address: [
+          "Provide Country ISO standard two-letter code for the following address: " + address,
+          "Provide the street name for the following address: " + address,
+          "Provide the postal code of the following address: " + address
+    ], ArrayType(StringType()))(col("Address"))
 )
 
 completed_batch_df = batch_completion.transform(df).cache()
