@@ -78,6 +78,7 @@ Suppose that due to the lack of standardized data collection practices, your dat
 ![address](images/address.png)
 
 ```python
+from pyspark.sql.functions import *
 from synapse.ml.cognitive import OpenAICompletion
 from synapse.ml.core.platform import find_secret
 
