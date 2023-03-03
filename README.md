@@ -46,6 +46,9 @@ openai_deployment = "<your_openai_deployment_name>"
 # Get OpenAI key
 key = find_secret("<your_openai_secret_name>", "<your_keyvault_service_name>")
 
+# Read input data
+df = spark.read.load('abfss://<storage_account_name>@<container_name>.dfs.core.windows.net/address.csv', format='csv', header=True, delimiter='|')
+
 # API call definition
 completion = (
     OpenAICompletion()
