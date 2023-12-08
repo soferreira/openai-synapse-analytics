@@ -99,7 +99,7 @@
 					"key = find_secret(\"openai-key\", \"<your_keyvault_name>\")\r\n",
 					"\r\n",
 					"# API call definition\r\n",
-					"completion = (\r\n",
+					"batch_completion = (\r\n",
 					"    OpenAICompletion()\r\n",
 					"        .setSubscriptionKey(key)\r\n",
 					"        .setDeploymentName(openai_deployment)\r\n",
