@@ -73,7 +73,7 @@ df_completion = completion.transform(df).withColumn("response", col("output.choi
 
 ## Use Case - Get address information from unstandardized data
 
-Suppose that due to the lack of standardized data collection practices, your data contains various formats for addresses, making it challenging to perform analysis. In the example bellow we leverage batch prompt of OpenAICompletion to standardize the address format across the dataframe.
+Suppose that due to the lack of standardized data collection practices, your data contains various formats for addresses, making it challenging to perform analysis. In the example bellow we leverage batch prompt request of OpenAICompletion to standardize the address format across the dataframe.
 
 ![address](images/address.png)
 
@@ -88,7 +88,7 @@ openai_deployment = "<your_openai_deployment_name>"
 key = find_secret("<your_openai_secret_name>", "<your_keyvault_service_name>")
 
 # API call definition
-completion = (
+batch_completion = (
     OpenAICompletion()
         .setSubscriptionKey(key)
         .setDeploymentName(openai_deployment)
